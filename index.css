@@ -1,0 +1,25 @@
+.container {
+  width: 100%;
+  padding: 10px;
+}
+
+@media (min-width: 768px) {
+  .container {
+    width: 80%;
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    width: 1200px;
+  }
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}

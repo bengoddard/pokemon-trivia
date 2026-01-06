@@ -11,9 +11,18 @@ function Game(){
     const [correctCount, setCorrectCount] = useState(0);
     const [wrongCount, setWrongCount] = useState(0);
     const { pokemon, isLoading, error } = usePokemon(count);
+    const [message, setMessage] = useState("")
 
     const handleCheckGuess = () => {
-    if (guess.toLowerCase().trim() === pokemon.species.name.toLowerCase()) {
+    if (message){
+      setIsCorrect(true);
+      setTimeout(() => {
+      setCount(prev => prev + 1);
+      setGuess("");
+      setIsCorrect(false);
+      setMessage("");
+    }, 2000);
+    } else if (guess.toLowerCase().trim() === pokemon.species.name.toLowerCase()) {
       setIsCorrect(true);
       setCorrectCount(prev => prev + 1);
       setTimeout(() => {
@@ -26,6 +35,12 @@ function Game(){
     }
   }
 
+    const handleSkip = () => {
+        setCount(prev => prev + 1);
+        setMessage("");
+        setGuess("");
+    }
+
     return (
 		<Box textAlign="center" py={10} bg="blue.200" minH="100vh">
             <VStack gap={6}>
@@ -36,7 +51,9 @@ function Game(){
                 {error ? <Text color="red.500">{error}</Text> : (
                     <PokemonCard pokemon={pokemon} isCorrect={isCorrect} isLoading={isLoading} />
                 )}
-
+                {pokemon ? <Text >{message}</Text> : (
+                    <Text >Loading...</Text>
+                )}
                 <Input
                     placeholder="Enter Pokemon Name"
                     value={guess}
@@ -47,11 +64,14 @@ function Game(){
                 />
 
                 <HStack gap="4">
-                    <Button colorPalette="blue" onClick={handleCheckGuess} disabled={isCorrect || isLoading}>
+                    <Button colorPalette="black" onClick={handleCheckGuess} disabled={isCorrect || isLoading}>
                         Submit
                     </Button>
-                    <Button variant="outline" bg="white" onClick={() => setCount(prev => prev + 1)}>
+                    <Button variant="outline" bg="white" onClick={handleSkip}>
                         Skip
+                    </Button>
+                    <Button variant="outline" bg="white" onClick={() => setMessage(pokemon.species.name)}>
+                        Reveal
                     </Button>
                 </HStack>
             </VStack>
