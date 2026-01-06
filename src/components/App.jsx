@@ -1,94 +1,61 @@
 import React, { useState, useEffect } from "react";
 import { Input, Box, Image, Button, Text, VStack, Heading, HStack, Badge } from '@chakra-ui/react';
+import { usePokemon } from "../hooks/usePokemon";
+import ScoreBoard from "./ScoreBoard";
+import PokemonCard from "./PokemonCard";
 
-function App({ Component, pageProps }){
-    const [pokemon, setPokemon] = useState(null);
+function App(){
     const [count, setCount] = useState(0);
     const [guess, setGuess] = useState("");
     const [isCorrect, setIsCorrect] = useState(false);
-    const [message, setMessage] = useState("");
     const [correctCount, setCorrectCount] = useState(0);
     const [wrongCount, setWrongCount] = useState(0);
+    const { pokemon, isLoading, error } = usePokemon(count);
 
     const handleCheckGuess = () => {
     if (guess.toLowerCase().trim() === pokemon.species.name.toLowerCase()) {
-      setMessage(`Correct! It's ${pokemon.species.name}!`);
       setIsCorrect(true);
       setCorrectCount(prev => prev + 1);
       setTimeout(() => {
       setCount(prev => prev + 1);
+      setGuess("");
+      setIsCorrect(false);
     }, 2000);
     } else {
-      setMessage("Incorrect! Try again.");
       setWrongCount(prev => prev + 1);
     }
   }
 
-    useEffect(() => {
-        setGuess("");
-        setIsCorrect(false);
-        setMessage("");
-        const randomId = Math.floor(Math.random() * 1025) + 1;
-        fetch(`https://pokeapi.co/api/v2/pokemon/${randomId}`)
-            .then(response => response.json())
-            .then((json => setPokemon(json)))
-            .catch(error => console.error('Error fetching data:', error));
-    }, [count]);
     return (
-		<Box textAlign="center" py={10} bg="blue.200">
-      <VStack spacing={6}>
-        <Heading>Who's That Pokémon?</Heading>
-        <Box border="1px" borderColor="gray.200" borderRadius="md" p={4}>
-          <Image
-            src={pokemon?.sprites.other['official-artwork'].front_default}
-            alt="Pokemon"
-            boxSize="250px"
-          />
-        </Box>
-        <Input
-        placeholder="Enter Pokemon Name"
-        value={guess}
-        onChange={(e) => setGuess(e.target.value)}
-        width="300px"
-        textAlign="center"
-        disabled={isCorrect}
-      />
-        <HStack gap="4" justify="center">
-        <Button
-            colorPalette="black"
-            onClick={handleCheckGuess}
-            disabled={isCorrect}
-        >
-            Submit Guess
-        </Button>
+		<Box textAlign="center" py={10} bg="blue.200" minH="100vh">
+            <VStack gap={6}>
+                <Heading size="2xl" color="white">Who's That Pokémon?</Heading>
 
-        <Button
-            variant="outline"
-            colorPalette="gray"
-            onClick={() => setCount(prev => prev + 1)}
-        >
-            Next
-        </Button>
-        </HStack>
+                <ScoreBoard correct={correctCount} wrong={wrongCount} />
 
-        <Box mt={4}>
-        <Text status={isCorrect ? "success" : "error"} borderRadius="md">
-        {message}
-        </Text>
-        </Box>
-        <HStack gap={10} mb={6}>
-            <VStack>
-            <Text fontSize="sm">CORRECT</Text>
-            <Badge colorPalette="green" fontSize="xl">{correctCount}</Badge>
+                {error ? <Text color="red.500">{error}</Text> : (
+                    <PokemonCard pokemon={pokemon} isCorrect={isCorrect} isLoading={isLoading} />
+                )}
+
+                <Input
+                    placeholder="Enter Pokemon Name"
+                    value={guess}
+                    onChange={(e) => setGuess(e.target.value)}
+                    width="300px"
+                    bg="white"
+                    disabled={isCorrect || isLoading}
+                />
+
+                <HStack gap="4">
+                    <Button colorPalette="blue" onClick={handleCheckGuess} disabled={isCorrect || isLoading}>
+                        Submit
+                    </Button>
+                    <Button variant="outline" bg="white" onClick={() => setCount(prev => prev + 1)}>
+                        Skip
+                    </Button>
+                </HStack>
             </VStack>
-
-            <VStack>
-            <Text fontSize="sm">INCORRECT</Text>
-            <Badge colorPalette="red" fontSize="xl">{wrongCount}</Badge>
-            </VStack>
-        </HStack>
-      </VStack>
-    </Box>
+        </Box>
 	);
 }
 
